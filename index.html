@@ -1,92 +1,184 @@
 <!DOCTYPE html>
 <html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1"
+      crossorigin="anonymous"
+    />
+    <style>
+      .table-style {
+        border-collapse: separate;
+        border-spacing: 10px 0;
+        text-align: left;
+        font-size: 0.8em;
+      }
 
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    .table-style {
-      border-spacing: 10px 1rem;
-      text-align: left;
-    }
-  </style>
-</head>
+      #map {
+        height: 50vh;
+      }
 
-<body>
-  <cite><a href="https://developer.mozilla.org/ja/docs/conflicting/Web/API/Geolocation/getCurrentPosition"
-      target="_blank">MDN Web Docs PositionOptions</a></cite>
-  <table class="table-style">
-    <tbody>
-      <tr>
-        <th>enableHighAccuracy</th>
-        <td>アプリケーションが可能な限り高精度の結果を求めることを表す Boolean 型の値です。このプロパティに true
-          を指定すると、デバイスが高精度な位置情報を提供できる場合に、それを利用することができます。これによって測位結果の取得に時間がかかったり、 (GPS チップを搭載したモバイル端末などで)
-          電力消費が増える可能性があります。逆に false を指定することで、短時間で結果を返したり消費電力を節約したりといった選択をデバイスに任せることができます。デフォルトは false です。</td>
-      </tr>
-      <tr>
-        <th>timeout</th>
-        <td>位置情報の取得にかかる時間の上限 (ミリ秒) を表す、 long 型の正の値です。デフォルトは Infinity で、位置情報が得られるまで getCurrentPosition() が待ち続けることを意味します。
-        </td>
-      </tr>
-      <tr>
-        <th>maximumAge</th>
-        <td>キャッシュ済みの位置情報の有効期限 (ミリ秒) を表す、 long 型の正の値です。これに 0
-          を指定すると、デバイスはキャッシュ済みの位置情報を返すことができず、常に最新の位置情報を取得しようとします。Infinity を指定した場合、デバイスは常にキャッシュから位置情報を返します。デフォルトは 0 です。
-        </td>
-      </tr>
-    </tbody>
-  </table>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW"
+      crossorigin="anonymous"
+    ></script>
+  </head>
 
-  <form name="options">
-    <label>
-      <input type="checkbox" name="enableHighAccuracy">enableHighAccuracy
-    </label><br />
-    <label>
-      <input type="number" name="timeout" step="100" min="0" value="0">timeout(0でInfinity)
-    </label><br />
-    <label>
-      <input type="number" name="maximumAge" step="100" min="-1" value="0">maximumAge(-1でInfinity)
-    </label><br />
-  </form>
-  <button onclick="watchPosition.start()">watch Position Start</button>
-  <button onclick="watchPosition.stop()">watch Stop</button>
+  <body>
+    <!-- currentPosition取得のローディングで動作するモーダル -->
+    <div
+      class="modal fade"
+      id="loadingModal"
+      tabindex="-1"
+      aria-labelledby="loadingtModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="lodaingModalLabel">
+              現在位置取得中です。数秒かかります...
+            </h5>
+          </div>
+          <div id="loadingModalBody" class="modal-body"></div>
+        </div>
+      </div>
+    </div>
+    <!-------- モーダル終わり ---------->
 
-  <hr />
+    <div class="container mt-1">
+      <div id="map"></div>
 
-  <table id="watch-position-table" class="table-style">
-    <tbody>
-      <tr>
-        <th>lat</th>
-        <td></td>
-      </tr>
-      <tr>
-        <th>lng</th>
-        <td></td>
-      </tr>
-      <tr>
-        <th>error</th>
-        <td id="error-td"></td>
-      </tr>
-      <tr>
-        <th>enableHighAccuracy</th>
-        <td></td>
-      </tr>
-      <tr>
-        <th>timeout</th>
-        <td></td>
-      </tr>
-      <tr>
-        <th>maximumAge</th>
-        <td></td>
-      </tr>
-      <tr>
-        <th>count</th>
-        <td></td>
-      </tr>
-    </tbody>
-  </table>
+      <table id="watch-position-table" class="table-style mt-1">
+        <tbody>
+          <tr>
+            <th>lat</th>
+            <td></td>
+            <td>緯度</td>
+          </tr>
+          <tr>
+            <th>lng</th>
+            <td></td>
+            <td>軽度</td>
+          </tr>
+          <tr>
+            <th>accuracy</th>
+            <td></td>
+            <td>誤差メートル</td>
+          </tr>
+          <tr>
+            <th>heading</th>
+            <td></td>
+            <td>傾き</td>
+          </tr>
+          <tr>
+            <th>altitude</th>
+            <td></td>
+            <td>高さ</td>
+          </tr>
+          <tr>
+            <th>altitudeAccuracy</th>
+            <td></td>
+            <td>高さ誤差</td>
+          </tr>
+          <tr>
+            <th>speed</th>
+            <td></td>
+            <td>スピード</td>
+          </tr>
+          <hr />
+          <tr>
+            <th>enableHighAccuracy</th>
+            <td></td>
+            <td>高精度設定</td>
+          </tr>
+          <tr>
+            <th>timeout</th>
+            <td></td>
+            <td>タイムアウト</td>
+          </tr>
+          <tr>
+            <th>maximumAge</th>
+            <td></td>
+            <td>キャッシュ</td>
+          </tr>
+          <tr>
+            <th>count</th>
+            <td></td>
+            <td>発火回数</td>
+          </tr>
+          <tr>
+            <th>error</th>
+            <td id="error-td"></td>
+            <td>エラー表示</td>
+          </tr>
+        </tbody>
+      </table>
 
-  <script src="./dist/watch_position.js"></script>
-</body>
+      <hr />
 
+      <cite
+        ><a
+          href="https://developer.mozilla.org/ja/docs/conflicting/Web/API/Geolocation/getCurrentPosition"
+          target="_blank"
+          >MDN Web Docs PositionOptions</a
+        ></cite
+      >
+      <form name="options">
+        <label>
+          <input
+            type="checkbox"
+            name="enableHighAccuracy"
+            class="my-2 me-2 form-check-input"
+          />enableHighAccuracy </label
+        ><br />
+        <label>
+          <input
+            type="number"
+            name="timeout"
+            step="100"
+            min="0"
+            value="0"
+            class="my-2 me-2"
+          />timeout(0でInfinity) </label
+        ><br />
+        <label>
+          <input
+            type="number"
+            name="maximumAge"
+            step="100"
+            min="-1"
+            value="0"
+            class="my-2 me-2"
+          />maximumAge(-1でInfinity) </label
+        ><br />
+      </form>
+      <button class="btn btn-primary mt-2 me-2" onclick="watchPosition.start()">
+        watch Position Start
+      </button>
+      <button class="btn btn-secondary mt-2" onclick="watchPosition.stop()">
+        watch Position Stop
+      </button>
+    </div>
+
+    <script src="./dist/watch_position.js"></script>
+    <script src="./dist/loading_modal.js"></script>
+    <script src="./dist/google_maps.js"></script>
+    <script
+      async
+      defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAPxj_47MuwVk93kW3Xl7yMye7mu5rwqfM&callback=initMap&language=ja&region=JP"
+    ></script>
+  </body>
 </html>
