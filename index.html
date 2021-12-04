@@ -21,16 +21,22 @@
           <td id="error-td"></td>
         </tr>
       </tbody>
+      <p id="watch-fire">1</p>
     </table>
 
     <script>
+      var i;
       const watchAndLogGeolocation = () => {
         console.log('watch start!')
         navigator.geolocation.watchPosition(pos => {
           const latTd = document.getElementById('lat-td')
           const lngTd = document.getElementById('lng-td')
+          const watchFire = document.getElementById('watch-fire')
           latTd.textContent = pos.coords.latitude
           lngTd.textContent = pos.coords.longitude
+          let fireCount = Number.parseInt(watchFire.textContent)
+          fireCount++
+          watchFire.textContent = fireCount
         }, e => { 
           const errorTd = document.getElementById('error-td')
           errorTd.textContent = e.message
