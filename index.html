@@ -1,48 +1,173 @@
 <!DOCTYPE html>
 <html lang="ja">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
   </head>
 
   <body>
     <table>
+      <h3>通常のwatch</h3>
       <tbody>
         <tr>
           <th>lat</th>
-          <td id="lat-td"></td>
+          <td id="lat-td-1"></td>
         </tr>
         <tr>
           <th>lng</th>
-          <td id="lng-td"></td>
+          <td id="lng-td-1"></td>
         </tr>
         <tr>
           <th>error</th>
-          <td id="error-td"></td>
+          <td id="error-td-1"></td>
+        </tr>
+        <tr>
+          <th>count</th>
+          <td id="watch-fire-1">1</td>
         </tr>
       </tbody>
-      <p id="watch-fire">1</p>
+    </table>
+
+    <hr />
+
+    <table>
+      <h3>enableHighAccuracy = trueのwatch</h3>
+      <tbody>
+        <tr>
+          <th>lat</th>
+          <td id="lat-td-2"></td>
+        </tr>
+        <tr>
+          <th>lng</th>
+          <td id="lng-td-2"></td>
+        </tr>
+        <tr>
+          <th>error</th>
+          <td id="error-td-2"></td>
+        </tr>
+        <tr>
+          <th>count</th>
+          <td id="watch-fire-2">1</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <hr />
+
+    <table>
+      <h3>maximumAge = 5000 のwatch</h3>
+      <tbody>
+        <tr>
+          <th>lat</th>
+          <td id="lat-td-3"></td>
+        </tr>
+        <tr>
+          <th>lng</th>
+          <td id="lng-td-3"></td>
+        </tr>
+        <tr>
+          <th>error</th>
+          <td id="error-td-3"></td>
+        </tr>
+        <tr>
+          <th>count</th>
+          <td id="watch-fire-3">1</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <hr />
+
+    <table>
+      <h3>enableHighAccuracy = true　かつ　maximumAge = 5000 のwatch</h3>
+      <tbody>
+        <tr>
+          <th>lat</th>
+          <td id="lat-td-4"></td>
+        </tr>
+        <tr>
+          <th>lng</th>
+          <td id="lng-td-4"></td>
+        </tr>
+        <tr>
+          <th>error</th>
+          <td id="error-td-4"></td>
+        </tr>
+        <tr>
+          <th>count</th>
+          <td id="watch-fire-4">1</td>
+        </tr>
+      </tbody>
     </table>
 
     <script>
-      var i;
-      const watchAndLogGeolocation = () => {
-        console.log('watch start!')
-        navigator.geolocation.watchPosition(pos => {
-          const latTd = document.getElementById('lat-td')
-          const lngTd = document.getElementById('lng-td')
-          const watchFire = document.getElementById('watch-fire')
-          latTd.textContent = pos.coords.latitude
-          lngTd.textContent = pos.coords.longitude
-          let fireCount = Number.parseInt(watchFire.textContent)
-          fireCount++
-          watchFire.textContent = fireCount
-        }, e => { 
-          const errorTd = document.getElementById('error-td')
-          errorTd.textContent = e.message
-         })
-      }
-      watchAndLogGeolocation()
+      // テーブルに位置情報を書き込む共通処理
+      const writePosToTable = (pos, tableNumber) => {
+        const latTd = document.getElementById(`lat-td-${tableNumber}`);
+        const lngTd = document.getElementById(`lng-td-${tableNumber}`);
+        const watchFire = document.getElementById(`watch-fire-${tableNumber}`);
+        latTd.textContent = pos.coords.latitude;
+        lngTd.textContent = pos.coords.longitude;
+        let fireCount = Number.parseInt(watchFire.textContent);
+        fireCount++;
+        watchFire.textContent = fireCount;
+      };
+
+      // テーブルにエラーを書き込む共通処理
+      const writeErrorToTable = (e, tableNumber) => {
+        const errorTd = document.getElementById(`error-td-${tableNumber}`);
+        errorTd.textContent = e.message;
+      };
+
+      // 一番目のテーブル(オプションなし)のwatch
+      const watchAndLogGeolocationOne = () => {
+        navigator.geolocation.watchPosition(
+          (pos) => writePosToTable(pos, 1),
+          (e) => writeErrorToTable(e, 1)
+        );
+      };
+
+      // 二番目のテーブル(enableHighAccuracy: true)のwatch
+      const watchAndLogGeolocationTwo = () => {
+        const options = {
+          enableHighAccuracy: true,
+        };
+        navigator.geolocation.watchPosition(
+          (pos) => writePosToTable(pos, 2),
+          (e) => writeErrorToTable(e, 2),
+          options
+        );
+      };
+
+      // 三番目のテーブル(maximumAge = 5000)のwatch
+      const watchAndLogGeolocationThree = () => {
+        const options = {
+          maximumAge: 5000,
+        };
+        navigator.geolocation.watchPosition(
+          (pos) => writePosToTable(pos, 3),
+          (e) => writeErrorToTable(e, 3),
+          options
+        );
+      };
+
+      // 四番目のテーブル(enableHighAccuracy: true かつ maximumAge = 5000)のwatch
+      const watchAndLogGeolocationFour = () => {
+        const options = {
+          enableHighAccuracy: true,
+          maximumAge: 5000,
+        };
+        navigator.geolocation.watchPosition(
+          (pos) => writePosToTable(pos, 4),
+          (e) => writeErrorToTable(e, 4),
+          options
+        );
+      };
+
+      watchAndLogGeolocationOne();
+      watchAndLogGeolocationTwo();
+      watchAndLogGeolocationThree();
+      watchAndLogGeolocationFour();
     </script>
   </body>
 </html>
