@@ -95,9 +95,9 @@ class WatchPosition {
     this.tableRowsLoop((_, td) => {
       td.textContent = ''
     })
+    navigator.geolocation.clearWatch(this.watchId);
     this.watchId = 0
     this.count = 0
-    navigator.geolocation.clearWatch(this.watchId);
   };
 }
 
