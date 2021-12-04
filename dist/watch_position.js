@@ -45,7 +45,7 @@ class WatchPosition {
                 maximumAge: maximumAge.value,
             };
             // timeoutが0ならInfinity代入
-            options.timeout = options.timeout || Infinity;
+            options.timeout = Number.parseInt(options.timeout) || Infinity;
             // maximumAgeがマイナスならInfinity代入
             options.maximumAge =
                 Math.sign(options.maximumAge) === 1 ? options.maximumAge : Infinity;
@@ -75,6 +75,8 @@ class WatchPosition {
             this.tableRowsLoop((_, td) => {
                 td.textContent = '';
             });
+            this.watchId = 0;
+            this.count = 0;
             navigator.geolocation.clearWatch(this.watchId);
         };
         this.watchId = 0;
