@@ -81,20 +81,22 @@ class WatchPosition {
     // ここでvalueを抽出しないと、後のInfinity代入でinputのtype属性が矛盾しエラーになる
     let options = {
       enableHighAccuracy: enableHighAccuracy.checked,
-      timeout: timeout.value,
-      maximumAge: maximumAge.value,
+      timeout: Number.parseInt(timeout.value),
+      maximumAge: Number.parseInt(maximumAge.value),
     };
     // timeoutが0ならInfinity代入
-    options.timeout = Number.parseInt(options.timeout) || Infinity;
+    options.timeout = options.timeout || Infinity;
+
     // maximumAgeがマイナスならInfinity代入
     options.maximumAge =
-      Math.sign(options.maximumAge) === 1 ? options.maximumAge : Infinity;
+      Math.sign(options.maximumAge) === -1 ?  Infinity : options.maximumAge;
     return options;
   };
 
   // watchPosition開始
   public start = () => {
     const options = this.getOptions();
+    console.log(options)
     this._watchId = navigator.geolocation.watchPosition(
       (pos) => {
         this._pos = pos
@@ -125,7 +127,6 @@ class WatchPosition {
   public get getCurrentLatLngLiteral() {
     let lat = this._pos?.coords.latitude
     let lng = this._pos?.coords.longitude
-    console.log(lat, lng)
 
     return new Promise<google.maps.LatLngLiteral>((resolve, reject) => {
       if (!lat || !lng) { 
