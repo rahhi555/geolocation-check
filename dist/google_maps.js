@@ -45,6 +45,7 @@ class GoogleMap {
     }
     /** 誤差サークルをセットする(サークルが存在しなければ初期化、そうでなければ移動させる) */
     setAccuracyCircle(pos) {
+        const center = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         if (!this._circle) {
             this._circle = new google.maps.Circle({
                 map: this._map,
@@ -54,14 +55,23 @@ class GoogleMap {
                 strokeWeight: 1,
                 fillColor: "#0088ff",
                 fillOpacity: 0.2,
+                center
             });
         }
-        this._circle.setCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        this._circle.setCenter(center);
     }
     /** マーカーセットとサークルセットを合わせたメソッド */
     setMarkerAndCircle(pos) {
         this.setCurrentPositionMarker(pos);
         this.setAccuracyCircle(pos);
+    }
+    /** マーカーとサークル削除 */
+    removeMarkerAndCircle() {
+        var _a, _b;
+        (_a = this._marker) === null || _a === void 0 ? void 0 : _a.setMap(null);
+        (_b = this._circle) === null || _b === void 0 ? void 0 : _b.setMap(null);
+        this._marker = undefined;
+        this._circle = undefined;
     }
 }
 let map;

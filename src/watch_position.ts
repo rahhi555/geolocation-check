@@ -74,8 +74,8 @@ class WatchPosition {
     errorTd.textContent = e.message;
   };
 
-  // フォームからオプション取得およびテーブルにオプション書き出し
-  private getAndWriteOptions = () => {
+  // フォームからオプション取得
+  private getOptions = () => {
     // @ts-ignore
     const { enableHighAccuracy, timeout, maximumAge } = document.forms.options.elements;
     // ここでvalueを抽出しないと、後のInfinity代入でinputのtype属性が矛盾しエラーになる
@@ -89,27 +89,12 @@ class WatchPosition {
     // maximumAgeがマイナスならInfinity代入
     options.maximumAge =
       Math.sign(options.maximumAge) === 1 ? options.maximumAge : Infinity;
-
-    this.tableRowsLoop((th, td) => {
-      switch (th.textContent) {
-        case "enableHighAccuracy":
-          td.textContent = enableHighAccuracy.checked;
-          break;
-        case "timeout":
-          td.textContent = options.timeout;
-          break;
-        case "maximumAge":
-          td.textContent = options.maximumAge;
-          break;
-      }
-    });
-
     return options;
   };
 
   // watchPosition開始
   public start = () => {
-    const options = this.getAndWriteOptions();
+    const options = this.getOptions();
     this._watchId = navigator.geolocation.watchPosition(
       (pos) => {
         this._pos = pos
@@ -130,6 +115,7 @@ class WatchPosition {
     this._watchId = 0;
     this._count = 0;
     this._pos = undefined
+    map.removeMarkerAndCircle()
   };
 
   /**
@@ -139,9 +125,10 @@ class WatchPosition {
   public get getCurrentLatLngLiteral() {
     let lat = this._pos?.coords.latitude
     let lng = this._pos?.coords.longitude
+    console.log(lat, lng)
 
     return new Promise<google.maps.LatLngLiteral>((resolve, reject) => {
-      if (!lat || !lng) {
+      if (!lat || !lng) { 
         loadingModal.start()
         navigator.geolocation.getCurrentPosition(
           (pos) => {

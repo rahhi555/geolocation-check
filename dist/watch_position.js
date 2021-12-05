@@ -59,8 +59,8 @@ class WatchPosition {
             const errorTd = document.getElementById("error-td");
             errorTd.textContent = e.message;
         };
-        // フォームからオプション取得およびテーブルにオプション書き出し
-        this.getAndWriteOptions = () => {
+        // フォームからオプション取得
+        this.getOptions = () => {
             // @ts-ignore
             const { enableHighAccuracy, timeout, maximumAge } = document.forms.options.elements;
             // ここでvalueを抽出しないと、後のInfinity代入でinputのtype属性が矛盾しエラーになる
@@ -74,24 +74,11 @@ class WatchPosition {
             // maximumAgeがマイナスならInfinity代入
             options.maximumAge =
                 Math.sign(options.maximumAge) === 1 ? options.maximumAge : Infinity;
-            this.tableRowsLoop((th, td) => {
-                switch (th.textContent) {
-                    case "enableHighAccuracy":
-                        td.textContent = enableHighAccuracy.checked;
-                        break;
-                    case "timeout":
-                        td.textContent = options.timeout;
-                        break;
-                    case "maximumAge":
-                        td.textContent = options.maximumAge;
-                        break;
-                }
-            });
             return options;
         };
         // watchPosition開始
         this.start = () => {
-            const options = this.getAndWriteOptions();
+            const options = this.getOptions();
             this._watchId = navigator.geolocation.watchPosition((pos) => {
                 this._pos = pos;
                 map.setMarkerAndCircle(pos);
@@ -107,6 +94,7 @@ class WatchPosition {
             this._watchId = 0;
             this._count = 0;
             this._pos = undefined;
+            map.removeMarkerAndCircle();
         };
         this._watchId = 0;
         this._count = 0;
@@ -119,6 +107,7 @@ class WatchPosition {
         var _a, _b;
         let lat = (_a = this._pos) === null || _a === void 0 ? void 0 : _a.coords.latitude;
         let lng = (_b = this._pos) === null || _b === void 0 ? void 0 : _b.coords.longitude;
+        console.log(lat, lng);
         return new Promise((resolve, reject) => {
             if (!lat || !lng) {
                 loadingModal.start();
